@@ -1,0 +1,7 @@
+---
+
+- name: Rehash all CA certificates
+  shell: /usr/bin/c_rehash "{{ hm_certified__cert_ca_dir }}"
+
+- name: Rehash trusted CA certificates
+  shell: /usr/bin/c_rehash "{{ hm_certified__trustedcert_ca_dir }}"
