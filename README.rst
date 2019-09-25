@@ -117,12 +117,12 @@ Example Playbook
 
 Example content of inventory file ``inventory``::
 
-    [servers-certified]
+    [servers_certified]
     localhost
 
 Example content of role playbook file ``playbook.yml``::
 
-    - hosts: servers-certified
+    - hosts: servers_certified
       remote_user: root
       roles:
         - role: honzamach.certified

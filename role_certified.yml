@@ -11,7 +11,7 @@
 #   git clone https://github.com/honzamach/ansible-role-certified.git honzamach.certified
 #
 
-- hosts: servers-certified
+- hosts: servers_certified
   remote_user: root
   roles:
     - role: honzamach.certified
