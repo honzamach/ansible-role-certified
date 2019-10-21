@@ -3,7 +3,7 @@
 #-------------------------------------------------------------------------------
 
 - name: Checking for server certificates in vault repository
-  local_action: stat path="vault/host_certs/{{ inventory_hostname }}"
+  local_action: stat path="inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs"
   register: server_certs_present_check
 
 - block:
@@ -20,7 +20,7 @@
         path: "{{ hm_certified__cert_host_dir }}/{{ item.path }}"
         state: directory
         mode: '{{ item.mode }}'
-      with_filetree: "vault/host_certs/{{ inventory_hostname }}/"
+      with_filetree: "inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs/"
       when: item.state == 'directory'
 
     - name: Uploading server certificates
@@ -30,7 +30,7 @@
         owner: root
         group: root
         mode: "{{ item.mode }}"
-      with_filetree: "vault/host_certs/{{ inventory_hostname }}/"
+      with_filetree: "inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs/"
       when: item.state == 'file'
 
   when: server_certs_present_check.stat.isdir is defined and server_certs_present_check.stat.isdir
@@ -62,7 +62,7 @@
     state: directory
 
 - name: Checking for CA certificates in local repository
-  local_action: stat path="vault/ca_certs"
+  local_action: stat path="inventory/group_files/servers/honzamach.certified/ca_certs"
   register: ca_certs_present_check
 
 - name: Uploading CA certificates to central certificate repository
@@ -73,7 +73,7 @@
     group: root
     mode: 0644
   with_fileglob:
-    - "vault/ca_certs/*.pem"
+    - "inventory/group_files/servers/honzamach.certified/ca_certs/*.pem"
   when: ca_certs_present_check.stat.isdir is defined and ca_certs_present_check.stat.isdir
   notify: Rehash all CA certificates
 
@@ -85,6 +85,6 @@
     group: root
     mode: 0644
   with_fileglob:
-    - "vault/ca_certs/*.pem"
+    - "inventory/group_files/servers/honzamach.certified/ca_certs/*.pem"
   when: ca_certs_present_check.stat.isdir is defined and ca_certs_present_check.stat.isdir
   notify: Rehash trusted CA certificates
