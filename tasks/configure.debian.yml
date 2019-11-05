@@ -2,12 +2,14 @@
 
 #-------------------------------------------------------------------------------
 
-- name: Checking for server certificates in vault repository
-  local_action: stat path="inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs"
+- name: "Checking for server certificates in vault repository"
+  stat:
+    path: "inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs"
+  delegate_to: localhost
   register: server_certs_present_check
 
 - block:
-    - name: Managing server certificate directory
+    - name: "Managing server certificate directory"
       file:
         path: "{{ hm_certified__cert_host_dir }}"
         owner: root
@@ -15,7 +17,7 @@
         mode: 0755
         state: directory
 
-    - name: Managing server certificate subdirectories
+    - name: "Managing server certificate subdirectories"
       file:
         path: "{{ hm_certified__cert_host_dir }}/{{ item.path }}"
         state: directory
@@ -23,7 +25,7 @@
       with_filetree: "inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs/"
       when: item.state == 'directory'
 
-    - name: Uploading server certificates
+    - name: "Uploading server certificates"
       copy:
         src: "{{ item.src }}"
         dest: "{{ hm_certified__cert_host_dir }}/{{ item.path }}"
@@ -33,11 +35,13 @@
       with_filetree: "inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs/"
       when: item.state == 'file'
 
-  when: server_certs_present_check.stat.isdir is defined and server_certs_present_check.stat.isdir
+  when: >
+    server_certs_present_check.stat.isdir is defined and
+    server_certs_present_check.stat.isdir
 
 #-------------------------------------------------------------------------------
 
-- name: Managing central certificate repository
+- name: "Managing central certificate repository"
   file:
     path: "{{ hm_certified__cert_ca_dir }}"
     owner: root
@@ -45,7 +49,7 @@
     mode: 0755
     state: directory
 
-- name: Managing central certificate private key repository
+- name: "Managing central certificate private key repository"
   file:
     path: "{{ hm_certified__cert_key_dir }}"
     owner: root
@@ -53,7 +57,7 @@
     mode: 0755
     state: directory
 
-- name: Managing trusted CA certificate repository
+- name: "Managing trusted CA certificate repository"
   file:
     path: "{{ hm_certified__trustedcert_ca_dir }}"
     owner: root
@@ -61,11 +65,13 @@
     mode: 0755
     state: directory
 
-- name: Checking for CA certificates in local repository
-  local_action: stat path="inventory/group_files/servers/honzamach.certified/ca_certs"
+- name: "Checking for CA certificates in local repository"
+  stat:
+    path: "inventory/group_files/servers/honzamach.certified/ca_certs"
+  delegate_to: localhost
   register: ca_certs_present_check
 
-- name: Uploading CA certificates to central certificate repository
+- name: "Uploading CA certificates to central certificate repository"
   copy:
     src: "{{ item }}"
     dest: "{{ hm_certified__cert_ca_dir }}"
@@ -74,7 +80,9 @@
     mode: 0644
   with_fileglob:
     - "inventory/group_files/servers/honzamach.certified/ca_certs/*.pem"
-  when: ca_certs_present_check.stat.isdir is defined and ca_certs_present_check.stat.isdir
+  when: >
+    ca_certs_present_check.stat.isdir is defined and
+    ca_certs_present_check.stat.isdir
   notify: Rehash all CA certificates
 
 - name: Uploading CA certificates to trusted CA certificate repository
@@ -86,5 +94,7 @@
     mode: 0644
   with_fileglob:
     - "inventory/group_files/servers/honzamach.certified/ca_certs/*.pem"
-  when: ca_certs_present_check.stat.isdir is defined and ca_certs_present_check.stat.isdir
+  when: >
+    ca_certs_present_check.stat.isdir is defined and
+    ca_certs_present_check.stat.isdir
   notify: Rehash trusted CA certificates
