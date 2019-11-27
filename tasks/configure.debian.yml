@@ -2,6 +2,11 @@
 
 #-------------------------------------------------------------------------------
 
+- name: "Creating local user group for certificate access restrictions"
+  group:
+    name: ssl-cert
+    state: present
+
 - name: "Checking for server certificates in vault repository"
   stat:
     path: "inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs"
@@ -21,7 +26,9 @@
       file:
         path: "{{ hm_certified__cert_host_dir }}/{{ item.path }}"
         state: directory
-        mode: '{{ item.mode }}'
+        owner: root
+        group: ssl-cert
+        mode: 0640
       with_filetree: "inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs/"
       when: item.state == 'directory'
 
@@ -30,8 +37,8 @@
         src: "{{ item.src }}"
         dest: "{{ hm_certified__cert_host_dir }}/{{ item.path }}"
         owner: root
-        group: root
-        mode: "{{ item.mode }}"
+        group: ssl-cert
+        mode: 0640
       with_filetree: "inventory/host_files/{{ inventory_hostname }}/honzamach.certified/host_certs/"
       when: item.state == 'file'
 
