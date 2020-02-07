@@ -63,7 +63,6 @@ Following roles have dependency on this role:
 * :ref:`griffin_watchee <section-role-griffin-watchee>` *[SOFT]*
 * :ref:`logged <section-role-logged>`
 * :ref:`logserver <section-role-logserver>`
-* :ref:`mentat_cesnet <section-role-mentat-cesnet>`
 * :ref:`postgresql <section-role-postgresql>` *[SOFT]*
 
 
