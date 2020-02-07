@@ -3,15 +3,9 @@
 Role **certified**
 ================================================================================
 
-Ansible role for managing certificates on all target servers.
-
 * `Ansible Galaxy page <https://galaxy.ansible.com/honzamach/certified>`__
 * `GitHub repository <https://github.com/honzamach/ansible-role-certified>`__
 * `Travis CI page <https://travis-ci.org/honzamach/ansible-role-certified>`__
-
-
-Description
---------------------------------------------------------------------------------
 
 Main purpose of this role is server certificate management. It takes care of following
 tasks:
@@ -21,77 +15,20 @@ tasks:
 * Management of default CA certificate key repository.
 * Management of trusted CA certificate repository.
 
-.. note::
+**Table of Contents:**
 
-    This role requires the :ref:`secure registry <section-overview-secure-registry>` feature.
+* :ref:`section-role-certified-installation`
+* :ref:`section-role-certified-dependencies`
+* :ref:`section-role-certified-usage`
+* :ref:`section-role-certified-variables`
+* :ref:`section-role-certified-files`
+* :ref:`section-role-certified-author`
 
-
-Requirements
---------------------------------------------------------------------------------
-
-This role does not have any special requirements.
-
-
-Dependencies
---------------------------------------------------------------------------------
-
-This role is not dependent on any other role.
-
-Following roles have dependency on this role:
-
-* :ref:`logged <section-role-logged>`
-* :ref:`logserver <section-role-logserver>`
-* :ref:`mentat <section-role-mentat>`
-* :ref:`warden_client <section-role-warden-client>`
+This role is part of the `MSMS <https://github.com/honzamach/msms>`__ package.
+Some common features are documented in its :ref:`manual <section-manual>`.
 
 
-Internal variables
---------------------------------------------------------------------------------
-
-.. envvar:: hm_certified__cert_host_dir
-
-    Path to host certificate directory. This directory will contain custom server
-    certificate.
-
-    * *Datatype:* ``string``
-    * *Default value: /etc/ssl/servercert*
-
-.. envvar:: hm_certified__cert_ca_dir
-
-    Path to CA certificate repository.
-
-    * *Datatype:* ``string``
-    * *Default value: /etc/ssl/certs*
-
-.. envvar:: hm_certified__cert_key_dir
-
-    Path to private certificate key repositoryy.
-
-    * *Datatype:* ``string``
-    * *Default value: /etc/ssl/private*
-
-.. envvar:: hm_certified__trustedcert_ca_dir
-
-    Path to trusted CA certificate repository.
-
-    * *Datatype:* ``string``
-    * *Default value: /etc/ssl/trusted_ca*
-
-
-Usage and customization
---------------------------------------------------------------------------------
-
-This role is (attempted to be) written according to the `Ansible best practices <https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html>`__. The default implementation should fit most users,
-however you may customize it by tweaking default variables and providing custom
-templates.
-
-
-Variable customizations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Most of the usefull variables are defined in ``defaults/main.yml`` file, so they
-can be easily overridden almost from `anywhere <https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#variable-precedence-where-should-i-put-a-variable>`__.
-
+.. _section-role-certified-installation:
 
 Installation
 --------------------------------------------------------------------------------
@@ -112,15 +49,35 @@ Currently the advantage of using direct Git cloning is the ability to easily upd
 the role when new version comes out.
 
 
-Example Playbook
+.. _section-role-certified-dependencies:
+
+Dependencies
+--------------------------------------------------------------------------------
+
+This role is not dependent on any other role.
+
+Following roles have dependency on this role:
+
+* :ref:`alchemist <section-role-alchemist>`
+* :ref:`griffin <section-role-griffin>` *[SOFT]*
+* :ref:`griffin_watchee <section-role-griffin-watchee>` *[SOFT]*
+* :ref:`logged <section-role-logged>`
+* :ref:`logserver <section-role-logserver>`
+* :ref:`mentat_cesnet <section-role-mentat-cesnet>`
+* :ref:`postgresql <section-role-postgresql>` *[SOFT]*
+
+
+.. _section-role-certified-usage:
+
+Usage
 --------------------------------------------------------------------------------
 
 Example content of inventory file ``inventory``::
 
     [servers_certified]
-    localhost
+    your-server
 
-Example content of role playbook file ``playbook.yml``::
+Example content of role playbook file ``role_playbook.yml``::
 
     - hosts: servers_certified
       remote_user: root
@@ -132,16 +89,100 @@ Example content of role playbook file ``playbook.yml``::
 Example usage::
 
     # Run everything:
-    ansible-playbook -i inventory playbook.yml
+    ansible-playbook --ask-vault-pass --inventory inventory role_playbook.yml
+
+It is recommended to follow these configuration principles:
+
+* Create/edit file ``inventory/group_vars/all/vars.yml`` and within define some sensible
+  defaults for all your managed servers::
+
+        # This is mandatory for soft dependency mechanism to work.
+        hm_certified__cert_host_dir: /etc/ssl/servercert
+        hm_certified__cert_ca_dir: /etc/ssl/certs
+        hm_certified__cert_key_dir: /etc/ssl/private
+        hm_certified__trustedcert_ca_dir: /etc/ssl/trusted_ca
+
+* Use files ``inventory/host_vars/[your-server]/vars.yml`` to customize settings
+  for particular servers. Please see section :ref:`section-role-certified-variables`
+  for all available options.
+
+* Use directory ``inventory/group_files/servers/honzamach.certified/ca_certs`` to
+  provide additional certification authority certificates to be uploaded to all
+  servers. These will end up in both :envvar:`hm_certified__cert_ca_dir` and
+  :envvar:`hm_certified__trustedcert_ca_dir` directories.
+
+* Use directory ``inventory/host_files/[your-server]/honzamach.certified/host_certs``
+  to provide certificates specific for particular server. These will end up in
+  :envvar:`hm_certified__cert_host_dir` directory. Please do not forget to encrypt
+  at least certificate keys with :ref:`ansible-vault <section-overview-vault>`.
 
 
-License
+.. _section-role-certified-variables:
+
+Configuration variables
 --------------------------------------------------------------------------------
 
-MIT
+
+Internal role variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. envvar:: hm_certified__cert_host_dir
+
+    Path to host certificate directory. This directory will contain custom server
+    certificate. For soft dependency mechanism to work this must be defined globally,
+    otherwise this variable will be undefined.
+
+    * *Datatype:* ``string``
+    * *Default:* ``/etc/ssl/servercert``
+
+.. envvar:: hm_certified__cert_ca_dir
+
+    Path to CA certificate repository.
+
+    * *Datatype:* ``string``
+    * *Default:* ``/etc/ssl/certs``
+
+.. envvar:: hm_certified__cert_key_dir
+
+    Path to private certificate key repository.
+
+    * *Datatype:* ``string``
+    * *Default:* ``/etc/ssl/private``
+
+.. envvar:: hm_certified__trustedcert_ca_dir
+
+    Path to trusted CA certificate repository. These certificates may be anything
+    you use and trust in your organization, even self-signed certificates for some
+    custom internal application. One example use-case is a configuration setting
+    `ca_dir() <https://www.syslog-ng.com/technical-documents/doc/syslog-ng-open-source-edition/3.25/administration-guide/ca_dir>`__
+    of syslog-ng <https://www.syslog-ng.com/>`__ daemon, which you typically do not
+    point to general ``/etc/ssl/certs`` directory, but to a directory containing
+    a subset of certification authorities used by your log servers.
+
+    * *Datatype:* ``string``
+    * *Default:* ``/etc/ssl/trusted_ca``
 
 
-Author Information
+.. _section-role-certified-files:
+
+Managed files
 --------------------------------------------------------------------------------
 
-Jan Mach <honza.mach.ml@gmail.com>
+This role uploads certificates to remote directories according to configration
+:ref:`variables <section-role-certified-variables>`. By default these directories
+are following:
+
+* ``/etc/ssl/servercert``
+* ``/etc/ssl/certs``
+* ``/etc/ssl/trusted_ca``
+
+
+.. _section-role-certified-author:
+
+Author and license
+--------------------------------------------------------------------------------
+
+| *Copyright:* (C) since 2019 Honza Mach <honza.mach.ml@gmail.com>
+| *Author:* Honza Mach <honza.mach.ml@gmail.com>
+| Use of this role is governed by the MIT license, see LICENSE file.
+|

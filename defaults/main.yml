@@ -1,21 +1,9 @@
 ---
 
-#
-# Path to host certificate directory.
-#
 hm_certified__cert_host_dir: /etc/ssl/servercert
 
-#
-# Path to CA certificate directory.
-#
 hm_certified__cert_ca_dir: /etc/ssl/certs
 
-#
-# Path to private certificate key directory.
-#
 hm_certified__cert_key_dir: /etc/ssl/private
 
-#
-# Path to trusted CA certificate directory.
-#
 hm_certified__trustedcert_ca_dir: /etc/ssl/trusted_ca
