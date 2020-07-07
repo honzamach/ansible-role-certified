@@ -73,6 +73,9 @@ Usage
 
 Example content of inventory file ``inventory``::
 
+    [servers]
+    your-server
+
     [servers_certified]
     your-server
 
@@ -171,9 +174,9 @@ This role uploads certificates to remote directories according to configration
 :ref:`variables <section-role-certified-variables>`. By default these directories
 are following:
 
-* ``/etc/ssl/servercert``
-* ``/etc/ssl/certs``
-* ``/etc/ssl/trusted_ca``
+* ``/etc/ssl/servercert`` *[COPY]*
+* ``/etc/ssl/certs`` *[COPY]*
+* ``/etc/ssl/trusted_ca`` *[COPY]*
 
 
 .. _section-role-certified-author:
